@@ -385,51 +385,56 @@
 
 <script>
     const LOGOS = {
+        // Rosa vibrante, forma de cruz arredondada com "livelo" em branco
         livelo: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="10" fill="#F26522"/>
-            <text x="7" y="29" font-family="Arial Black,Arial" font-weight="900" font-size="19" fill="white" letter-spacing="-1">L</text>
-            <circle cx="28" cy="12" r="5" fill="white" opacity="0.95"/>
-            <circle cx="28" cy="12" r="2.5" fill="#F26522"/>
+            <rect width="40" height="40" rx="10" fill="#FF007A"/>
+            <path d="M20 4 C22.5 4 23.5 6 23.5 9 L23.5 16.5 L31 16.5 C34 16.5 36 17.5 36 20 C36 22.5 34 23.5 31 23.5 L23.5 23.5 L23.5 31 C23.5 34 22.5 36 20 36 C17.5 36 16.5 34 16.5 31 L16.5 23.5 L9 23.5 C6 23.5 4 22.5 4 20 C4 17.5 6 16.5 9 16.5 L16.5 16.5 L16.5 9 C16.5 6 17.5 4 20 4Z" fill="#FF007A" stroke="white" stroke-width="0"/>
+            <path d="M20 5.5 C21.8 5.5 22.2 7 22.2 9.2 L22.2 17.8 L30.8 17.8 C33 17.8 34.5 18.2 34.5 20 C34.5 21.8 33 22.2 30.8 22.2 L22.2 22.2 L22.2 30.8 C22.2 33 21.8 34.5 20 34.5 C18.2 34.5 17.8 33 17.8 30.8 L17.8 22.2 L9.2 22.2 C7 22.2 5.5 21.8 5.5 20 C5.5 18.2 7 17.8 9.2 17.8 L17.8 17.8 L17.8 9.2 C17.8 7 18.2 5.5 20 5.5Z" fill="white"/>
+            <text x="20" y="22.5" font-family="Arial,sans-serif" font-weight="700" font-size="7.5" fill="#FF007A" text-anchor="middle">livelo</text>
         </svg>`,
+        // Branco com E preto bold e traço vermelho — logo oficial da Esfera/Santander
         esfera: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="10" fill="#005FAD"/>
-            <circle cx="20" cy="20" r="11" fill="none" stroke="white" stroke-width="2.2"/>
-            <ellipse cx="20" cy="20" rx="5.5" ry="11" fill="none" stroke="white" stroke-width="1.5"/>
-            <line x1="9" y1="20" x2="31" y2="20" stroke="white" stroke-width="1.5"/>
+            <rect width="40" height="40" rx="10" fill="white"/>
+            <text x="7" y="30" font-family="Arial Black,Arial" font-weight="900" font-size="26" fill="#111111">E</text>
+            <rect x="19" y="27" width="14" height="5" rx="1" fill="#EC0000"/>
         </svg>`,
+        // Laranja com "Smiles" e curva sorriso — logo oficial
         smiles: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="10" fill="#FDB827"/>
-            <path d="M8 22 Q20 32 32 22" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-            <circle cx="13" cy="15" r="3" fill="white"/>
-            <circle cx="27" cy="15" r="3" fill="white"/>
+            <rect width="40" height="40" rx="10" fill="#F26114"/>
+            <text x="20" y="20" font-family="Georgia,Times New Roman,serif" font-style="italic" font-weight="700" font-size="11" fill="white" text-anchor="middle">Smiles</text>
+            <path d="M9 25 Q20 33 31 25" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
         </svg>`,
+        // Roxo/azul escuro degradê com chevrons — logo LATAM Pass
         latam: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="10" fill="#D0112B"/>
-            <path d="M20 8 L32 28 H8 Z" fill="white" opacity="0.15"/>
-            <path d="M20 10 L30 27 H10 Z" fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M14 27 L20 10 L26 27" fill="white" opacity="0.9"/>
-            <line x1="12" y1="27" x2="28" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <defs>
+                <linearGradient id="lgrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#7B1FA2"/>
+                    <stop offset="100%" stop-color="#1A237E"/>
+                </linearGradient>
+            </defs>
+            <rect width="40" height="40" rx="10" fill="url(#lgrad)"/>
+            <path d="M8 13 L14 20 L8 27" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 13 L14 20 L8 27" stroke="#E53935" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <path d="M14 13 L20 20 L14 27" stroke="white" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 13 L26 20 L20 27" stroke="white" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+            <text x="31" y="24" font-family="Arial Black,Arial" font-weight="900" font-size="7" fill="white" text-anchor="middle" letter-spacing="0">PASS</text>
         </svg>`,
+        // Azul claro com avião de papel — TudoAzul
         azul: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-            <rect width="40" height="40" rx="10" fill="#003087"/>
-            <circle cx="20" cy="20" r="4" fill="white"/>
-            <rect x="18.5" y="7" width="3" height="9" rx="1.5" fill="white"/>
-            <rect x="18.5" y="24" width="3" height="9" rx="1.5" fill="white"/>
-            <rect x="7" y="18.5" width="9" height="3" rx="1.5" fill="white"/>
-            <rect x="24" y="18.5" width="9" height="3" rx="1.5" fill="white"/>
-            <rect x="10.5" y="10.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(45 14.5 12)"/>
-            <rect x="21.5" y="10.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(-45 25.5 12)"/>
-            <rect x="10.5" y="26.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(-45 14.5 28)"/>
-            <rect x="21.5" y="26.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(45 25.5 28)"/>
+            <rect width="40" height="40" rx="10" fill="#00ADEF"/>
+            <polygon points="6,34 34,14 28,36 20,28" fill="#16304F"/>
+            <polygon points="6,34 34,14 20,28" fill="#1A3F62"/>
+            <polygon points="20,28 28,36 26,30" fill="#0D2B48"/>
+            <line x1="6" y1="34" x2="20" y2="28" stroke="#00ADEF" stroke-width="0.5"/>
         </svg>`,
     };
 
     const PROGRAMS = [
-        { id: 'livelo',  name: 'Livelo',     desc: 'Banco do Brasil & Bradesco', color: '#F26522', colorAlpha: 'rgba(242,101,34,0.15)',  cost: 30.00 },
-        { id: 'esfera',  name: 'Esfera',     desc: 'Santander',                  color: '#005FAD', colorAlpha: 'rgba(0,95,173,0.15)',   cost: 30.00 },
-        { id: 'smiles',  name: 'Smiles',     desc: 'GOL Linhas Aéreas',          color: '#E8A000', colorAlpha: 'rgba(232,160,0,0.15)',  cost: 15.55 },
-        { id: 'latam',   name: 'LATAM Pass', desc: 'LATAM Airlines',             color: '#D0112B', colorAlpha: 'rgba(208,17,43,0.15)',  cost: 23.00 },
-        { id: 'azul',    name: 'TudoAzul',   desc: 'Azul Linhas Aéreas',         color: '#1D4FC4', colorAlpha: 'rgba(29,79,196,0.15)',  cost: 13.00 },
+        { id: 'livelo',  name: 'Livelo',     desc: 'Banco do Brasil & Bradesco', color: '#FF007A', colorAlpha: 'rgba(255,0,122,0.15)',   cost: 30.00 },
+        { id: 'esfera',  name: 'Esfera',     desc: 'Santander',                  color: '#EC0000', colorAlpha: 'rgba(236,0,0,0.15)',     cost: 30.00 },
+        { id: 'smiles',  name: 'Smiles',     desc: 'GOL Linhas Aéreas',          color: '#F26114', colorAlpha: 'rgba(242,97,20,0.15)',   cost: 15.55 },
+        { id: 'latam',   name: 'LATAM Pass', desc: 'LATAM Airlines',             color: '#3949AB', colorAlpha: 'rgba(57,73,171,0.15)',   cost: 23.00 },
+        { id: 'azul',    name: 'TudoAzul',   desc: 'Azul Linhas Aéreas',         color: '#00ADEF', colorAlpha: 'rgba(0,173,239,0.15)',   cost: 13.00 },
     ];
 
     const costs = Object.fromEntries(PROGRAMS.map(p => [p.id, p.cost]));
