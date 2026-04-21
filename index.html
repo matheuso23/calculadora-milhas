@@ -172,9 +172,13 @@
             width: 40px; height: 40px;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            background: color-mix(in srgb, var(--program-color) 18%, transparent);
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .program-icon img, .program-icon svg {
+            width: 100%; height: 100%;
+            object-fit: contain;
         }
 
         .program-name { font-weight: 700; font-size: 1rem; }
@@ -197,8 +201,9 @@
         }
 
         .cost-prefix {
-            position: absolute; left: 10px;
+            position: absolute; left: 11px;
             font-size: 0.82rem; color: var(--muted); pointer-events: none;
+            z-index: 1;
         }
 
         .cost-suffix {
@@ -211,7 +216,7 @@
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 8px 52px 8px 28px;
+            padding: 8px 56px 8px 38px;
             color: var(--text);
             font-size: 0.9rem;
             outline: none;
@@ -379,12 +384,52 @@
 </div>
 
 <script>
+    const LOGOS = {
+        livelo: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#F26522"/>
+            <text x="7" y="29" font-family="Arial Black,Arial" font-weight="900" font-size="19" fill="white" letter-spacing="-1">L</text>
+            <circle cx="28" cy="12" r="5" fill="white" opacity="0.95"/>
+            <circle cx="28" cy="12" r="2.5" fill="#F26522"/>
+        </svg>`,
+        esfera: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#005FAD"/>
+            <circle cx="20" cy="20" r="11" fill="none" stroke="white" stroke-width="2.2"/>
+            <ellipse cx="20" cy="20" rx="5.5" ry="11" fill="none" stroke="white" stroke-width="1.5"/>
+            <line x1="9" y1="20" x2="31" y2="20" stroke="white" stroke-width="1.5"/>
+        </svg>`,
+        smiles: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#FDB827"/>
+            <path d="M8 22 Q20 32 32 22" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <circle cx="13" cy="15" r="3" fill="white"/>
+            <circle cx="27" cy="15" r="3" fill="white"/>
+        </svg>`,
+        latam: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#D0112B"/>
+            <path d="M20 8 L32 28 H8 Z" fill="white" opacity="0.15"/>
+            <path d="M20 10 L30 27 H10 Z" fill="none" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M14 27 L20 10 L26 27" fill="white" opacity="0.9"/>
+            <line x1="12" y1="27" x2="28" y2="27" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>`,
+        azul: `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="10" fill="#003087"/>
+            <circle cx="20" cy="20" r="4" fill="white"/>
+            <rect x="18.5" y="7" width="3" height="9" rx="1.5" fill="white"/>
+            <rect x="18.5" y="24" width="3" height="9" rx="1.5" fill="white"/>
+            <rect x="7" y="18.5" width="9" height="3" rx="1.5" fill="white"/>
+            <rect x="24" y="18.5" width="9" height="3" rx="1.5" fill="white"/>
+            <rect x="10.5" y="10.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(45 14.5 12)"/>
+            <rect x="21.5" y="10.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(-45 25.5 12)"/>
+            <rect x="10.5" y="26.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(-45 14.5 28)"/>
+            <rect x="21.5" y="26.5" width="8" height="3" rx="1.5" fill="white" transform="rotate(45 25.5 28)"/>
+        </svg>`,
+    };
+
     const PROGRAMS = [
-        { id: 'livelo',  name: 'Livelo',     icon: '🟠', desc: 'Banco do Brasil & Bradesco', color: '#f97316', colorAlpha: 'rgba(249,115,22,0.15)', cost: 30.00 },
-        { id: 'esfera',  name: 'Esfera',     icon: '🔵', desc: 'Santander',                  color: '#3b82f6', colorAlpha: 'rgba(59,130,246,0.15)', cost: 30.00 },
-        { id: 'smiles',  name: 'Smiles',     icon: '🟡', desc: 'GOL Linhas Aéreas',          color: '#f59e0b', colorAlpha: 'rgba(245,158,11,0.15)', cost: 15.55 },
-        { id: 'latam',   name: 'LATAM Pass', icon: '🔴', desc: 'LATAM Airlines',             color: '#ef4444', colorAlpha: 'rgba(239,68,68,0.15)',  cost: 23.00 },
-        { id: 'azul',    name: 'TudoAzul',   icon: '🟣', desc: 'Azul Linhas Aéreas',         color: '#8b5cf6', colorAlpha: 'rgba(139,92,246,0.15)', cost: 13.00 },
+        { id: 'livelo',  name: 'Livelo',     desc: 'Banco do Brasil & Bradesco', color: '#F26522', colorAlpha: 'rgba(242,101,34,0.15)',  cost: 30.00 },
+        { id: 'esfera',  name: 'Esfera',     desc: 'Santander',                  color: '#005FAD', colorAlpha: 'rgba(0,95,173,0.15)',   cost: 30.00 },
+        { id: 'smiles',  name: 'Smiles',     desc: 'GOL Linhas Aéreas',          color: '#E8A000', colorAlpha: 'rgba(232,160,0,0.15)',  cost: 15.55 },
+        { id: 'latam',   name: 'LATAM Pass', desc: 'LATAM Airlines',             color: '#D0112B', colorAlpha: 'rgba(208,17,43,0.15)',  cost: 23.00 },
+        { id: 'azul',    name: 'TudoAzul',   desc: 'Azul Linhas Aéreas',         color: '#1D4FC4', colorAlpha: 'rgba(29,79,196,0.15)',  cost: 13.00 },
     ];
 
     const costs = Object.fromEntries(PROGRAMS.map(p => [p.id, p.cost]));
@@ -403,7 +448,7 @@
                  style="--program-color:${p.color}; --program-color-alpha:${p.colorAlpha}">
                 <div class="best-badge">★ Melhor opção</div>
                 <div class="program-header">
-                    <div class="program-icon">${p.icon}</div>
+                    <div class="program-icon">${LOGOS[p.id]}</div>
                     <div>
                         <div class="program-name">${p.name}</div>
                         <div class="program-desc">${p.desc}</div>
