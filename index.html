@@ -195,39 +195,47 @@
         }
 
         .cost-input-row {
-            position: relative;
             display: flex;
             align-items: center;
-        }
-
-        .cost-prefix {
-            position: absolute; left: 11px;
-            font-size: 0.82rem; color: var(--muted); pointer-events: none;
-            z-index: 1;
-        }
-
-        .cost-suffix {
-            position: absolute; right: 10px;
-            font-size: 0.72rem; color: var(--muted); pointer-events: none;
-        }
-
-        .cost-input {
-            width: 100%;
             background: var(--surface2);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 8px 56px 8px 38px;
+            transition: border-color 0.2s;
+        }
+
+        .cost-input-row:focus-within { border-color: var(--program-color); }
+
+        .cost-prefix {
+            padding: 8px 4px 8px 10px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .cost-suffix {
+            padding: 8px 10px 8px 4px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            flex-shrink: 0;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .cost-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: none;
+            padding: 8px 0;
             color: var(--text);
             font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s;
             -moz-appearance: textfield;
         }
 
         .cost-input::-webkit-inner-spin-button,
         .cost-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-        .cost-input:focus { border-color: var(--program-color); }
 
         /* Results */
         .results-row {
