@@ -343,6 +343,149 @@
         }
 
         .formula-hint span { color: var(--accent); font-weight: 600; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 5px;
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Comparador */
+        .comp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 560px) { .comp-grid { grid-template-columns: 1fr; } }
+
+        .comp-col {
+            background: var(--surface2);
+            border-radius: 12px;
+            padding: 18px;
+            border: 1px solid var(--border);
+        }
+
+        .comp-col-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 14px;
+        }
+
+        .comp-col.direct .comp-col-title { color: var(--muted); }
+        .comp-col.portal .comp-col-title { color: var(--accent); }
+
+        /* Verdict card */
+        .verdict {
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            transition: background 0.4s, border-color 0.4s;
+        }
+
+        .verdict.positive {
+            background: rgba(34, 197, 94, 0.08);
+            border-color: rgba(34, 197, 94, 0.35);
+        }
+
+        .verdict.negative {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        .verdict.neutral {
+            background: var(--surface2);
+        }
+
+        .verdict-emoji { font-size: 2rem; margin-bottom: 8px; }
+
+        .verdict-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .verdict-title.positive { color: #22c55e; }
+        .verdict-title.negative { color: #ef4444; }
+        .verdict-title.neutral  { color: var(--muted); }
+
+        .verdict-sub { font-size: 0.85rem; color: var(--muted); }
+
+        /* Breakdown rows */
+        .breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--surface2);
+            border-radius: 10px;
+            font-size: 0.88rem;
+        }
+
+        .breakdown-row .lbl { color: var(--muted); }
+
+        .breakdown-row .val { font-weight: 700; }
+
+        .breakdown-row .val.pos { color: #22c55e; }
+        .breakdown-row .val.neg { color: #ef4444; }
+        .breakdown-row .val.neutral { color: var(--muted); }
+
+        /* Select style */
+        select.prog-select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+            color: var(--text);
+            font-size: 0.92rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237880a0' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+        }
+
+        select.prog-select:focus { border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -352,6 +495,14 @@
         <h1>✈️ Calculadora de Milhas</h1>
         <p>Converta pontuações e bônus em cashback equivalente</p>
     </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('calc')">🧮 Calculadora</button>
+        <button class="tab-btn" onclick="switchTab('comp')">⚖️ Comparador de Portal</button>
+    </div>
+
+    <!-- ABA 1: Calculadora -->
+    <div id="tab-calc" class="tab-panel active">
 
     <div class="card">
         <div class="section-label">Dados da Compra</div>
@@ -381,6 +532,81 @@
             <div class="empty-state">Preencha o valor da compra para ver o comparativo ↑</div>
         </div>
     </div>
+
+    </div><!-- /tab-calc -->
+
+    <!-- ABA 2: Comparador de Portal -->
+    <div id="tab-comp" class="tab-panel">
+
+    <div class="card">
+        <div class="section-label">Programa & Custo do Milheiro</div>
+        <div class="comp-grid">
+            <div class="field">
+                <label for="comp-prog">Programa de milhas</label>
+                <select id="comp-prog" class="prog-select" onchange="calcComp()">
+                    <option value="livelo">Livelo</option>
+                    <option value="esfera">Esfera</option>
+                    <option value="smiles">Smiles</option>
+                    <option value="latam">LATAM Pass</option>
+                    <option value="azul">TudoAzul</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="comp-milheiro">Custo de reposição do milheiro</label>
+                <div class="input-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="comp-milheiro" class="has-prefix" placeholder="15.55" step="0.01" min="0" oninput="calcComp()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="comp-grid">
+        <div class="comp-col direct">
+            <div class="comp-col-title">🏪 Compra direta</div>
+            <div class="field" style="margin-bottom: 14px;">
+                <label for="comp-preco-direto">Preço no site da loja</label>
+                <div class="input-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="comp-preco-direto" class="has-prefix" placeholder="500" step="0.01" min="0" oninput="calcComp()">
+                </div>
+            </div>
+            <div class="field">
+                <label for="comp-mult-direto">Pontos por real (cartão)</label>
+                <div class="input-wrap">
+                    <input type="number" id="comp-mult-direto" class="has-suffix" placeholder="1" step="0.5" min="0" value="1" oninput="calcComp()">
+                    <span class="input-suffix">× por real</span>
+                </div>
+            </div>
+        </div>
+        <div class="comp-col portal">
+            <div class="comp-col-title">🌐 Via portal de milhas</div>
+            <div class="field" style="margin-bottom: 14px;">
+                <label for="comp-preco-portal">Preço no portal</label>
+                <div class="input-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="comp-preco-portal" class="has-prefix" placeholder="520" step="0.01" min="0" oninput="calcComp()">
+                </div>
+            </div>
+            <div class="field">
+                <label for="comp-mult-portal">Pontos por real (portal)</label>
+                <div class="input-wrap">
+                    <input type="number" id="comp-mult-portal" class="has-suffix" placeholder="5" step="0.5" min="0" value="5" oninput="calcComp()">
+                    <span class="input-suffix">× por real</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="comp-verdict" class="verdict neutral">
+        <div class="verdict-emoji">💡</div>
+        <div class="verdict-title neutral">Preencha os dados acima</div>
+        <div class="verdict-sub">O resultado aparecerá aqui</div>
+    </div>
+
+    <div class="breakdown" id="comp-breakdown"></div>
+
+    </div><!-- /tab-comp -->
 
 </div>
 
@@ -557,6 +783,108 @@
                 <div class="summary-brl">${brl(r.cashbackValue)}</div>
             </div>
         `).join('')}</div>`;
+    }
+
+    // Preenche custo do milheiro do comparador ao trocar programa
+    const COSTS_DEFAULT = Object.fromEntries(PROGRAMS.map(p => [p.id, p.cost]));
+
+    document.getElementById('comp-prog').addEventListener('change', function() {
+        const milheiroInput = document.getElementById('comp-milheiro');
+        if (!milheiroInput.value) {
+            milheiroInput.value = COSTS_DEFAULT[this.value].toFixed(2);
+        }
+        calcComp();
+    });
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach((b, i) =>
+            b.classList.toggle('active', (i === 0) === (tab === 'calc')));
+        document.getElementById('tab-calc').classList.toggle('active', tab === 'calc');
+        document.getElementById('tab-comp').classList.toggle('active', tab === 'comp');
+        if (tab === 'comp') {
+            const milheiroInput = document.getElementById('comp-milheiro');
+            if (!milheiroInput.value) {
+                const prog = document.getElementById('comp-prog').value;
+                milheiroInput.value = COSTS_DEFAULT[prog].toFixed(2);
+            }
+            calcComp();
+        }
+    }
+
+    function calcComp() {
+        const progId       = document.getElementById('comp-prog').value;
+        const milheiro     = parseFloat(document.getElementById('comp-milheiro').value) || 0;
+        const precoDireto  = parseFloat(document.getElementById('comp-preco-direto').value) || 0;
+        const precoPortal  = parseFloat(document.getElementById('comp-preco-portal').value) || 0;
+        const multDireto   = parseFloat(document.getElementById('comp-mult-direto').value)  || 0;
+        const multPortal   = parseFloat(document.getElementById('comp-mult-portal').value)  || 0;
+
+        const verdictEl    = document.getElementById('comp-verdict');
+        const breakdownEl  = document.getElementById('comp-breakdown');
+
+        if (!precoDireto || !precoPortal || !milheiro) {
+            verdictEl.className = 'verdict neutral';
+            verdictEl.innerHTML = `<div class="verdict-emoji">💡</div>
+                <div class="verdict-title neutral">Preencha os dados acima</div>
+                <div class="verdict-sub">O resultado aparecerá aqui</div>`;
+            breakdownEl.innerHTML = '';
+            return;
+        }
+
+        // Pontos e valores
+        const ptosDireto  = precoDireto  * multDireto;
+        const ptosPortal  = precoPortal  * multPortal;
+        const valDireto   = (ptosDireto  / 1000) * milheiro;
+        const valPortal   = (ptosPortal  / 1000) * milheiro;
+
+        // Custo efetivo de cada opção (preço − valor dos pontos)
+        const efetivoDireto = precoDireto  - valDireto;
+        const efetivoPortal = precoPortal  - valPortal;
+        const ganho         = efetivoDireto - efetivoPortal; // positivo = portal vantajoso
+
+        // Pontos extras do portal vs direto
+        const ptosExtras = ptosPortal - ptosDireto;
+        const valExtras  = valPortal  - valDireto;
+        const custoExtra = precoPortal - precoDireto;
+
+        // Verdict
+        const threshold = 0.50;
+        let cls, emoji, titulo, sub;
+        if (ganho > threshold) {
+            cls = 'positive'; emoji = '✅';
+            titulo = `Vale a pena! Você economiza ${brl(ganho)} pelo portal`;
+            sub = `O portal é mais caro, mas os pontos extras compensam e ainda sobra ${brl(ganho)}.`;
+        } else if (ganho < -threshold) {
+            cls = 'negative'; emoji = '❌';
+            titulo = `Não vale a pena. Direto é ${brl(Math.abs(ganho))} mais barato`;
+            sub = `Os pontos do portal não cobrem o preço mais alto. Compre direto.`;
+        } else {
+            cls = 'neutral'; emoji = '🤝';
+            titulo = 'Praticamente empate';
+            sub = `Diferença de apenas ${brl(Math.abs(ganho))}. Escolha como preferir.`;
+        }
+
+        verdictEl.className = `verdict ${cls}`;
+        verdictEl.innerHTML = `<div class="verdict-emoji">${emoji}</div>
+            <div class="verdict-title ${cls}">${titulo}</div>
+            <div class="verdict-sub">${sub}</div>`;
+
+        breakdownEl.innerHTML = [
+            { lbl: 'Preço direto',                val: brl(precoDireto),      cls: '' },
+            { lbl: 'Preço no portal',             val: brl(precoPortal),      cls: custoExtra > 0 ? 'neg' : 'pos' },
+            { lbl: 'Diferença de preço',          val: (custoExtra >= 0 ? '+' : '') + brl(custoExtra), cls: custoExtra > 0 ? 'neg' : 'pos' },
+            { lbl: `Pontos direto (${multDireto}×)`,   val: ptosDireto.toLocaleString('pt-BR') + ' pts → ' + brl(valDireto),   cls: '' },
+            { lbl: `Pontos portal (${multPortal}×)`,   val: ptosPortal.toLocaleString('pt-BR') + ' pts → ' + brl(valPortal),   cls: 'pos' },
+            { lbl: 'Pontos extras pelo portal',   val: (ptosExtras >= 0 ? '+' : '') + ptosExtras.toLocaleString('pt-BR') + ' pts → ' + brl(valExtras), cls: valExtras >= 0 ? 'pos' : 'neg' },
+            { lbl: 'Custo efetivo direto',        val: brl(efetivoDireto),    cls: '' },
+            { lbl: 'Custo efetivo portal',        val: brl(efetivoPortal),    cls: efetivoPortal < efetivoDireto ? 'pos' : 'neg' },
+            { lbl: 'Resultado final',             val: (ganho >= 0 ? '▲ ' : '▼ ') + brl(Math.abs(ganho)) + (ganho > 0 ? ' a favor do portal' : ganho < 0 ? ' a favor do direto' : ''), cls: ganho > threshold ? 'pos' : ganho < -threshold ? 'neg' : 'neutral' },
+        ].map(r => `
+            <div class="breakdown-row">
+                <span class="lbl">${r.lbl}</span>
+                <span class="val ${r.cls}">${r.val}</span>
+            </div>
+        `).join('');
     }
 
     renderPrograms();
