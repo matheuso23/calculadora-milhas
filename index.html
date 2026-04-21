@@ -355,19 +355,12 @@
 
     <div class="card">
         <div class="section-label">Dados da Compra</div>
-        <div class="inputs-grid">
+        <div class="inputs-grid" style="grid-template-columns: 1fr;">
             <div class="field">
                 <label for="valor">Valor da compra</label>
                 <div class="input-wrap">
                     <span class="input-prefix">R$</span>
                     <input type="number" id="valor" class="has-prefix" placeholder="1000" min="0" step="0.01" oninput="calcular()">
-                </div>
-            </div>
-            <div class="field">
-                <label for="mult">Multiplicador de pontos</label>
-                <div class="input-wrap">
-                    <input type="number" id="mult" class="has-suffix" placeholder="1" min="0.5" step="0.5" value="1" oninput="calcular()">
-                    <span class="input-suffix">× por real</span>
                 </div>
             </div>
         </div>
@@ -377,7 +370,7 @@
     </div>
 
     <div class="section-label" style="padding: 0 4px; margin-bottom: 14px;">
-        Programas — ajuste o custo de reposição conforme a promoção do dia
+        Programas — ajuste o multiplicador e o custo de reposição de cada programa
     </div>
 
     <div class="programs-grid" id="programs-grid"></div>
@@ -446,6 +439,7 @@
     ];
 
     const costs = Object.fromEntries(PROGRAMS.map(p => [p.id, p.cost]));
+    const mults = Object.fromEntries(PROGRAMS.map(p => [p.id, 1]));
 
     function brl(v) {
         return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -465,6 +459,18 @@
                     <div>
                         <div class="program-name">${p.name}</div>
                         <div class="program-desc">${p.desc}</div>
+                    </div>
+                </div>
+                <div class="cost-wrap">
+                    <div class="cost-label">Multiplicador de pontos</div>
+                    <div class="cost-input-row">
+                        <input type="number" class="cost-input"
+                            id="mult-${p.id}"
+                            value="1"
+                            step="0.5" min="0.5" placeholder="1"
+                            oninput="updateMult('${p.id}', this.value)"
+                            style="padding-left: 10px;">
+                        <span class="cost-suffix">× por real</span>
                     </div>
                 </div>
                 <div class="cost-wrap">
@@ -505,12 +511,16 @@
         calcular();
     }
 
+    function updateMult(id, val) {
+        mults[id] = parseFloat(val) || 1;
+        calcular();
+    }
+
     function calcular() {
         const valor = parseFloat(document.getElementById('valor').value) || 0;
-        const mult  = parseFloat(document.getElementById('mult').value)  || 1;
 
         const results = PROGRAMS.map(p => {
-            const pontos        = valor * mult;
+            const pontos        = valor * mults[p.id];
             const cashbackValue = (pontos / 1000) * costs[p.id];
             const cashbackPct   = valor > 0 ? (cashbackValue / valor) * 100 : 0;
             return { ...p, pontos, cashbackValue, cashbackPct };
@@ -524,7 +534,7 @@
             document.getElementById(`pct-${r.id}`).textContent = valor > 0 ? pct(r.cashbackPct) : '—';
             document.getElementById(`val-${r.id}`).textContent = valor > 0 ? brl(r.cashbackValue) : '—';
             document.getElementById(`pts-${r.id}`).textContent = valor > 0
-                ? r.pontos.toLocaleString('pt-BR') + ' pts' : '— pts';
+                ? r.pontos.toLocaleString('pt-BR') + ' pts  (' + mults[r.id] + '×)' : '— pts';
             document.getElementById(`bar-${r.id}`).style.width =
                 valor > 0 ? ((r.cashbackPct / maxPct) * 100) + '%' : '0%';
             card.classList.toggle('best', valor > 0 && i === bestIdx);
