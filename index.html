@@ -561,6 +561,25 @@
         </div>
     </div>
 
+    <div class="card" style="margin-bottom: 16px;">
+        <div class="section-label">Cotação do Dólar</div>
+        <div class="comp-grid" style="margin-bottom: 0;">
+            <div class="field">
+                <label for="comp-usd">USD → BRL (hoje)</label>
+                <div class="input-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="comp-usd" class="has-prefix has-suffix" placeholder="5.80" step="0.01" min="0" oninput="calcComp()">
+                    <span class="input-suffix" id="usd-status" style="font-size:0.75rem;">buscando…</span>
+                </div>
+            </div>
+            <div class="field" style="justify-content: flex-end;">
+                <div style="font-size:0.78rem; color:var(--muted); line-height:1.6; padding-top: 22px;">
+                    Cartões pontuam em dólar. A cotação é usada para converter o preço em R$ antes de calcular os pontos do cartão.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="comp-grid">
         <div class="comp-col direct">
             <div class="comp-col-title">🏪 Compra direta</div>
@@ -572,10 +591,10 @@
                 </div>
             </div>
             <div class="field">
-                <label for="comp-mult-direto">Pontos por real (cartão)</label>
+                <label for="comp-mult-direto">Pontos por dólar (cartão)</label>
                 <div class="input-wrap">
-                    <input type="number" id="comp-mult-direto" class="has-suffix" placeholder="1" step="0.5" min="0" value="1" oninput="calcComp()">
-                    <span class="input-suffix">× por real</span>
+                    <input type="number" id="comp-mult-direto" class="has-suffix" placeholder="2.5" step="0.5" min="0" value="2.5" oninput="calcComp()">
+                    <span class="input-suffix">× por US$</span>
                 </div>
             </div>
         </div>
@@ -807,13 +826,33 @@
                 const prog = document.getElementById('comp-prog').value;
                 milheiroInput.value = COSTS_DEFAULT[prog].toFixed(2);
             }
+            const usdInput = document.getElementById('comp-usd');
+            if (!usdInput.value) fetchCotacao();
+            else calcComp();
+        }
+    }
+
+    async function fetchCotacao() {
+        try {
+            const res  = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+            const data = await res.json();
+            const bid  = parseFloat(data.USDBRL.bid);
+            const input  = document.getElementById('comp-usd');
+            const status = document.getElementById('usd-status');
+            if (!input.value) input.value = bid.toFixed(2);
+            status.textContent = '✓ atualizado';
+            status.style.color = '#22c55e';
             calcComp();
+        } catch {
+            const status = document.getElementById('usd-status');
+            status.textContent = 'erro — edite';
+            status.style.color = '#ef4444';
         }
     }
 
     function calcComp() {
-        const progId       = document.getElementById('comp-prog').value;
         const milheiro     = parseFloat(document.getElementById('comp-milheiro').value) || 0;
+        const usd          = parseFloat(document.getElementById('comp-usd').value)       || 0;
         const precoDireto  = parseFloat(document.getElementById('comp-preco-direto').value) || 0;
         const precoPortal  = parseFloat(document.getElementById('comp-preco-portal').value) || 0;
         const multDireto   = parseFloat(document.getElementById('comp-mult-direto').value)  || 0;
@@ -822,7 +861,7 @@
         const verdictEl    = document.getElementById('comp-verdict');
         const breakdownEl  = document.getElementById('comp-breakdown');
 
-        if (!precoDireto || !precoPortal || !milheiro) {
+        if (!precoDireto || !precoPortal || !milheiro || !usd) {
             verdictEl.className = 'verdict neutral';
             verdictEl.innerHTML = `<div class="verdict-emoji">💡</div>
                 <div class="verdict-title neutral">Preencha os dados acima</div>
@@ -831,23 +870,25 @@
             return;
         }
 
-        // Pontos e valores
-        const ptosDireto  = precoDireto  * multDireto;
-        const ptosPortal  = precoPortal  * multPortal;
-        const valDireto   = (ptosDireto  / 1000) * milheiro;
-        const valPortal   = (ptosPortal  / 1000) * milheiro;
+        // Cartão: pontos calculados em dólar (preço ÷ cotação × mult)
+        const precoDiretoUSD = precoDireto / usd;
+        const precoPortalUSD = precoPortal / usd;
+        const ptosDireto  = precoDiretoUSD * multDireto;
+        // Portal: pontos por real (padrão dos portais de milhas)
+        const ptosPortal  = precoPortal * multPortal;
 
-        // Custo efetivo de cada opção (preço − valor dos pontos)
-        const efetivoDireto = precoDireto  - valDireto;
-        const efetivoPortal = precoPortal  - valPortal;
-        const ganho         = efetivoDireto - efetivoPortal; // positivo = portal vantajoso
+        const valDireto   = (ptosDireto / 1000) * milheiro;
+        const valPortal   = (ptosPortal / 1000) * milheiro;
 
-        // Pontos extras do portal vs direto
+        // Custo efetivo (preço − valor dos pontos)
+        const efetivoDireto = precoDireto - valDireto;
+        const efetivoPortal = precoPortal - valPortal;
+        const ganho         = efetivoDireto - efetivoPortal;
+
         const ptosExtras = ptosPortal - ptosDireto;
         const valExtras  = valPortal  - valDireto;
         const custoExtra = precoPortal - precoDireto;
 
-        // Verdict
         const threshold = 0.50;
         let cls, emoji, titulo, sub;
         if (ganho > threshold) {
@@ -869,16 +910,18 @@
             <div class="verdict-title ${cls}">${titulo}</div>
             <div class="verdict-sub">${sub}</div>`;
 
+        const fmtUSD = v => 'US$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
         breakdownEl.innerHTML = [
-            { lbl: 'Preço direto',                val: brl(precoDireto),      cls: '' },
-            { lbl: 'Preço no portal',             val: brl(precoPortal),      cls: custoExtra > 0 ? 'neg' : 'pos' },
-            { lbl: 'Diferença de preço',          val: (custoExtra >= 0 ? '+' : '') + brl(custoExtra), cls: custoExtra > 0 ? 'neg' : 'pos' },
-            { lbl: `Pontos direto (${multDireto}×)`,   val: ptosDireto.toLocaleString('pt-BR') + ' pts → ' + brl(valDireto),   cls: '' },
-            { lbl: `Pontos portal (${multPortal}×)`,   val: ptosPortal.toLocaleString('pt-BR') + ' pts → ' + brl(valPortal),   cls: 'pos' },
-            { lbl: 'Pontos extras pelo portal',   val: (ptosExtras >= 0 ? '+' : '') + ptosExtras.toLocaleString('pt-BR') + ' pts → ' + brl(valExtras), cls: valExtras >= 0 ? 'pos' : 'neg' },
-            { lbl: 'Custo efetivo direto',        val: brl(efetivoDireto),    cls: '' },
-            { lbl: 'Custo efetivo portal',        val: brl(efetivoPortal),    cls: efetivoPortal < efetivoDireto ? 'pos' : 'neg' },
-            { lbl: 'Resultado final',             val: (ganho >= 0 ? '▲ ' : '▼ ') + brl(Math.abs(ganho)) + (ganho > 0 ? ' a favor do portal' : ganho < 0 ? ' a favor do direto' : ''), cls: ganho > threshold ? 'pos' : ganho < -threshold ? 'neg' : 'neutral' },
+            { lbl: 'Preço direto',                          val: brl(precoDireto) + ` (${fmtUSD(precoDiretoUSD)})`, cls: '' },
+            { lbl: 'Preço no portal',                       val: brl(precoPortal) + ` (${fmtUSD(precoPortalUSD)})`, cls: custoExtra > 0 ? 'neg' : 'pos' },
+            { lbl: 'Diferença de preço',                    val: (custoExtra >= 0 ? '+' : '') + brl(custoExtra),     cls: custoExtra > 0 ? 'neg' : 'pos' },
+            { lbl: `Pontos direto (${multDireto}× por US$)`, val: Math.round(ptosDireto).toLocaleString('pt-BR') + ' pts → ' + brl(valDireto), cls: '' },
+            { lbl: `Pontos portal (${multPortal}× por R$)`,  val: Math.round(ptosPortal).toLocaleString('pt-BR') + ' pts → ' + brl(valPortal), cls: 'pos' },
+            { lbl: 'Pontos extras pelo portal',             val: (ptosExtras >= 0 ? '+' : '') + Math.round(ptosExtras).toLocaleString('pt-BR') + ' pts → ' + brl(valExtras), cls: valExtras >= 0 ? 'pos' : 'neg' },
+            { lbl: 'Custo efetivo direto',                  val: brl(efetivoDireto), cls: '' },
+            { lbl: 'Custo efetivo portal',                  val: brl(efetivoPortal), cls: efetivoPortal < efetivoDireto ? 'pos' : 'neg' },
+            { lbl: 'Resultado final',                       val: (ganho >= 0 ? '▲ ' : '▼ ') + brl(Math.abs(ganho)) + (ganho > threshold ? ' a favor do portal' : ganho < -threshold ? ' a favor do direto' : ''), cls: ganho > threshold ? 'pos' : ganho < -threshold ? 'neg' : 'neutral' },
         ].map(r => `
             <div class="breakdown-row">
                 <span class="lbl">${r.lbl}</span>
