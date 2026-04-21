@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Milhas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d0f18;
+            --surface: #161824;
+            --surface2: #1e2132;
+            --border: #2a2d45;
+            --text: #e2e5f1;
+            --muted: #7880a0;
+            --accent: #7c6bff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 16px 80px;
+        }
+
+        .container { max-width: 960px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #7c6bff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        header p { color: var(--muted); font-size: 0.95rem; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 520px) {
+            .inputs-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.6rem; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 7px; }
+
+        label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+
+        .input-wrap { position: relative; display: flex; align-items: center; }
+
+        .input-prefix {
+            position: absolute; left: 13px;
+            color: var(--muted); font-size: 0.9rem; pointer-events: none;
+        }
+
+        .input-suffix {
+            position: absolute; right: 13px;
+            color: var(--muted); font-size: 0.85rem; pointer-events: none;
+            white-space: nowrap;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+        input[type="number"].has-prefix { padding-left: 36px; }
+        input[type="number"].has-suffix { padding-right: 90px; }
+
+        input[type="number"]:focus { border-color: var(--accent); }
+
+        /* Programs grid */
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .program-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .program-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--program-color);
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .program-card.best {
+            border-color: var(--program-color);
+            box-shadow: 0 0 0 1px var(--program-color), 0 8px 32px -8px var(--program-color-alpha);
+        }
+
+        .program-card.best::before { opacity: 1; }
+
+        .best-badge {
+            display: none;
+            position: absolute;
+            top: 14px; right: 14px;
+            background: var(--program-color);
+            color: white;
+            font-size: 0.62rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 3px 9px;
+            border-radius: 20px;
+        }
+
+        .program-card.best .best-badge { display: block; }
+
+        .program-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .program-icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            background: color-mix(in srgb, var(--program-color) 18%, transparent);
+            flex-shrink: 0;
+        }
+
+        .program-name { font-weight: 700; font-size: 1rem; }
+        .program-desc { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+        /* Cost field inside card */
+        .cost-wrap { margin-bottom: 16px; }
+
+        .cost-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .cost-input-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .cost-prefix {
+            position: absolute; left: 10px;
+            font-size: 0.82rem; color: var(--muted); pointer-events: none;
+        }
+
+        .cost-suffix {
+            position: absolute; right: 10px;
+            font-size: 0.72rem; color: var(--muted); pointer-events: none;
+        }
+
+        .cost-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 52px 8px 28px;
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .cost-input::-webkit-inner-spin-button,
+        .cost-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+        .cost-input:focus { border-color: var(--program-color); }
+
+        /* Results */
+        .results-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .result-box {
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .result-lbl {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .result-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .result-val.accent { color: var(--program-color); }
+
+        .pts-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .bar-bg {
+            height: 5px;
+            background: var(--surface2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--program-color);
+            border-radius: 3px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Summary */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .summary-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .summary-item.top { border-color: var(--prog-color); }
+
+        .summary-prog-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .summary-pct {
+            font-size: 1.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .summary-brl {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .formula-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+            background: var(--surface2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-top: 16px;
+            line-height: 1.6;
+        }
+
+        .formula-hint span { color: var(--accent); font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>✈️ Calculadora de Milhas</h1>
+        <p>Converta pontuações e bônus em cashback equivalente</p>
+    </header>
+
+    <div class="card">
+        <div class="section-label">Dados da Compra</div>
+        <div class="inputs-grid">
+            <div class="field">
+                <label for="valor">Valor da compra</label>
+                <div class="input-wrap">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="valor" class="has-prefix" placeholder="1000" min="0" step="0.01" oninput="calcular()">
+                </div>
+            </div>
+            <div class="field">
+                <label for="mult">Multiplicador de pontos</label>
+                <div class="input-wrap">
+                    <input type="number" id="mult" class="has-suffix" placeholder="1" min="0.5" step="0.5" value="1" oninput="calcular()">
+                    <span class="input-suffix">× por real</span>
+                </div>
+            </div>
+        </div>
+        <div class="formula-hint">
+            Fórmula: <span>(valor × multiplicador ÷ 1.000) × custo do milheiro</span> = retorno em R$
+        </div>
+    </div>
+
+    <div class="section-label" style="padding: 0 4px; margin-bottom: 14px;">
+        Programas — ajuste o custo de reposição conforme a promoção do dia
+    </div>
+
+    <div class="programs-grid" id="programs-grid"></div>
+
+    <div class="card">
+        <div class="section-label">Comparativo — do melhor ao pior retorno</div>
+        <div id="summary">
+            <div class="empty-state">Preencha o valor da compra para ver o comparativo ↑</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const PROGRAMS = [
+        { id: 'livelo',  name: 'Livelo',     icon: '🟠', desc: 'Banco do Brasil & Bradesco', color: '#f97316', colorAlpha: 'rgba(249,115,22,0.15)', cost: 30.00 },
+        { id: 'esfera',  name: 'Esfera',     icon: '🔵', desc: 'Santander',                  color: '#3b82f6', colorAlpha: 'rgba(59,130,246,0.15)', cost: 30.00 },
+        { id: 'smiles',  name: 'Smiles',     icon: '🟡', desc: 'GOL Linhas Aéreas',          color: '#f59e0b', colorAlpha: 'rgba(245,158,11,0.15)', cost: 15.55 },
+        { id: 'latam',   name: 'LATAM Pass', icon: '🔴', desc: 'LATAM Airlines',             color: '#ef4444', colorAlpha: 'rgba(239,68,68,0.15)',  cost: 23.00 },
+        { id: 'azul',    name: 'TudoAzul',   icon: '🟣', desc: 'Azul Linhas Aéreas',         color: '#8b5cf6', colorAlpha: 'rgba(139,92,246,0.15)', cost: 13.00 },
+    ];
+
+    const costs = Object.fromEntries(PROGRAMS.map(p => [p.id, p.cost]));
+
+    function brl(v) {
+        return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function pct(v) {
+        return v.toFixed(2).replace('.', ',') + '%';
+    }
+
+    function renderPrograms() {
+        document.getElementById('programs-grid').innerHTML = PROGRAMS.map(p => `
+            <div class="program-card" id="card-${p.id}"
+                 style="--program-color:${p.color}; --program-color-alpha:${p.colorAlpha}">
+                <div class="best-badge">★ Melhor opção</div>
+                <div class="program-header">
+                    <div class="program-icon">${p.icon}</div>
+                    <div>
+                        <div class="program-name">${p.name}</div>
+                        <div class="program-desc">${p.desc}</div>
+                    </div>
+                </div>
+                <div class="cost-wrap">
+                    <div class="cost-label">Custo de reposição do milheiro</div>
+                    <div class="cost-input-row">
+                        <span class="cost-prefix">R$</span>
+                        <input type="number" class="cost-input"
+                            id="cost-${p.id}"
+                            value="${p.cost.toFixed(2)}"
+                            step="0.01" min="0" placeholder="0.00"
+                            oninput="updateCost('${p.id}', this.value)">
+                        <span class="cost-suffix">/mil pts</span>
+                    </div>
+                </div>
+                <div class="results-row">
+                    <div class="result-box">
+                        <div class="result-lbl">Cashback</div>
+                        <div class="result-val accent" id="pct-${p.id}">—</div>
+                    </div>
+                    <div class="result-box">
+                        <div class="result-lbl">Valor em R$</div>
+                        <div class="result-val" id="val-${p.id}">—</div>
+                    </div>
+                </div>
+                <div class="pts-row">
+                    <span>Retorno relativo</span>
+                    <span id="pts-${p.id}">— pts</span>
+                </div>
+                <div class="bar-bg">
+                    <div class="bar-fill" id="bar-${p.id}" style="width:0%"></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateCost(id, val) {
+        costs[id] = parseFloat(val) || 0;
+        calcular();
+    }
+
+    function calcular() {
+        const valor = parseFloat(document.getElementById('valor').value) || 0;
+        const mult  = parseFloat(document.getElementById('mult').value)  || 1;
+
+        const results = PROGRAMS.map(p => {
+            const pontos        = valor * mult;
+            const cashbackValue = (pontos / 1000) * costs[p.id];
+            const cashbackPct   = valor > 0 ? (cashbackValue / valor) * 100 : 0;
+            return { ...p, pontos, cashbackValue, cashbackPct };
+        });
+
+        const maxPct = Math.max(...results.map(r => r.cashbackPct), 0.001);
+        const bestIdx = results.reduce((bi, r, i, a) => r.cashbackPct > a[bi].cashbackPct ? i : bi, 0);
+
+        results.forEach((r, i) => {
+            const card = document.getElementById(`card-${r.id}`);
+            document.getElementById(`pct-${r.id}`).textContent = valor > 0 ? pct(r.cashbackPct) : '—';
+            document.getElementById(`val-${r.id}`).textContent = valor > 0 ? brl(r.cashbackValue) : '—';
+            document.getElementById(`pts-${r.id}`).textContent = valor > 0
+                ? r.pontos.toLocaleString('pt-BR') + ' pts' : '— pts';
+            document.getElementById(`bar-${r.id}`).style.width =
+                valor > 0 ? ((r.cashbackPct / maxPct) * 100) + '%' : '0%';
+            card.classList.toggle('best', valor > 0 && i === bestIdx);
+        });
+
+        renderSummary(results, valor);
+    }
+
+    function renderSummary(results, valor) {
+        const el = document.getElementById('summary');
+        if (valor <= 0) {
+            el.innerHTML = `<div class="empty-state">Preencha o valor da compra para ver o comparativo ↑</div>`;
+            return;
+        }
+        const sorted = [...results].sort((a, b) => b.cashbackPct - a.cashbackPct);
+        el.innerHTML = `<div class="summary-grid">${sorted.map((r, i) => `
+            <div class="summary-item ${i === 0 ? 'top' : ''}" style="--prog-color:${r.color}">
+                <div class="summary-prog-name" style="color:${r.color}">${r.name}</div>
+                <div class="summary-pct" style="color:${i === 0 ? r.color : 'var(--text)'}">${pct(r.cashbackPct)}</div>
+                <div class="summary-brl">${brl(r.cashbackValue)}</div>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    renderPrograms();
+    calcular();
+</script>
+</body>
+</html>
